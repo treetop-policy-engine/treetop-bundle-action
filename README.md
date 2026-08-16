@@ -103,9 +103,9 @@ private signing key.
 | `github-token` | | Optional token for release downloads |
 
 `binary-version` never accepts `latest` or a moving major version. Releases up
-to `0.0.3` contain Linux x86-64 and ARM64 binaries. macOS and Windows x86-64
-and ARM64 downloads become available with the next `treetop-bundle` release;
-the action already recognizes those native archives.
+to `0.0.3` contain Linux x86-64 and ARM64 binaries. Apple-silicon macOS and
+x86-64 Windows downloads become available with the next `treetop-bundle`
+release; the action already recognizes those native archives.
 
 ## Outputs
 
@@ -131,9 +131,9 @@ npm test
 npm run test:coverage
 ```
 
-CI additionally compiles the pinned Rust CLI on native Linux, macOS, and
-Windows runners for x86-64 and ARM64. Every runner checks valid and invalid
-bundles, standalone policy and module modes, warning handling, multi-module
-imports, paths with spaces, deterministic builds, output hashes, and use of a
-preinstalled executable. Separate Linux jobs exercise real release downloads
-and checksum verification on both architectures.
+CI additionally compiles the pinned Rust CLI on native Linux x86-64 and ARM64,
+Apple-silicon macOS, and Windows x86-64 runners. Every runner checks valid and
+invalid bundles, standalone policy and module modes, warning handling,
+multi-module imports, paths with spaces, deterministic builds, output hashes,
+and use of a preinstalled executable. Separate Linux jobs exercise real
+release downloads and checksum verification on both architectures.
