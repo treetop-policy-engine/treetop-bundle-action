@@ -1,0 +1,10 @@
+format_version = 1
+name = "multi-module"
+
+[[modules]]
+manifest = "identity/treetop-module.toml"
+role = "ordinary"
+
+[[modules]]
+manifest = "dns/treetop-module.toml"
+role = "ordinary"

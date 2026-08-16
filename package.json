@@ -1,0 +1,15 @@
+{
+  "name": "treetop-bundle-action",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub Action for validating and building Treetop policy bundles",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "lint": "node scripts/lint.js",
+    "test": "node --test --test-reporter=spec",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-branches=75 --test-coverage-functions=85 --test-coverage-lines=80"
+  }
+}

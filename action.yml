@@ -1,0 +1,62 @@
+name: Treetop Bundle
+description: Validate and build Cedar policy bundles with treetop-bundle
+author: Treetop Policy Engine
+
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  manifest:
+    description: Bundle manifest, module manifest, or Cedar policy to check
+    required: false
+    default: treetop-bundle.toml
+  target:
+    description: Validation target (auto, bundle, module, or policy)
+    required: false
+    default: auto
+  schema:
+    description: Cedar schema used when target is policy
+    required: false
+  labels:
+    description: Label rules used when target is policy
+    required: false
+  working-directory:
+    description: Directory in the checked-out repository from which paths resolve
+    required: false
+    default: .
+  deny-warnings:
+    description: Fail validation when treetop-bundle emits a warning
+    required: false
+    default: "false"
+  build-output:
+    description: Build an unsigned bundle at this path after validating a bundle manifest
+    required: false
+  binary-version:
+    description: Exact treetop-bundle release version to download, without a leading v
+    required: false
+    default: 0.0.3
+  binary-path:
+    description: Existing treetop-bundle executable to use instead of downloading one
+    required: false
+  github-token:
+    description: Optional GitHub token used to download release assets
+    required: false
+
+outputs:
+  valid:
+    description: Whether validation succeeded under the configured warning policy
+  diagnostics-json:
+    description: Complete treetop-bundle diagnostics as a JSON array
+  archive-path:
+    description: Absolute path of the archive produced by build-output
+  archive-sha256:
+    description: SHA-256 of the archive produced by build-output
+  binary-path:
+    description: Absolute path of the treetop-bundle executable used by the action
+  binary-version:
+    description: Requested release version, or custom when binary-path was supplied
+
+runs:
+  using: node24
+  main: src/index.js

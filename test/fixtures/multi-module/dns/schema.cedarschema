@@ -1,0 +1,10 @@
+namespace ExampleCo::DNS {
+    entity Host = {
+        name: String,
+        labels: Set<String>,
+    };
+    action "read" appliesTo {
+        principal: ExampleCo::Identity::User,
+        resource: Host,
+    };
+}

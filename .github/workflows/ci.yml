@@ -1,0 +1,193 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit and metadata tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Node.js
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Check JavaScript syntax
+        run: npm run lint
+      - name: Run unit tests with coverage thresholds
+        run: npm run test:coverage
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
+      - name: Lint workflows and action metadata
+        run: |
+          actionlint_bin="$(go env GOPATH)/bin/actionlint"
+          "$actionlint_bin"
+
+  native-scenarios:
+    name: ${{ matrix.name }} scenarios
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86-64
+            runner: ubuntu-24.04
+            binary: treetop-bundle/target/release/treetop-bundle
+          - name: Linux ARM64
+            runner: ubuntu-24.04-arm
+            binary: treetop-bundle/target/release/treetop-bundle
+          - name: macOS x86-64
+            runner: macos-15-intel
+            binary: treetop-bundle/target/release/treetop-bundle
+          - name: macOS ARM64
+            runner: macos-15
+            binary: treetop-bundle/target/release/treetop-bundle
+          - name: Windows x86-64
+            runner: windows-2025
+            binary: treetop-bundle/target/release/treetop-bundle.exe
+          - name: Windows ARM64
+            runner: windows-11-arm
+            binary: treetop-bundle/target/release/treetop-bundle.exe
+    steps:
+      - name: Checkout action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Checkout pinned treetop-bundle source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: treetop-policy-engine/treetop-bundle
+          ref: e2ba9b7c89541fe54aafcbc19ce5de226dcaccca
+          path: treetop-bundle
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: stable
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@49a0bdc70d2e1b713ca9e2869b211fcce03d3c1c # v2
+        with:
+          workspaces: treetop-bundle -> target
+      - name: Build native CLI
+        working-directory: treetop-bundle
+        run: cargo build --locked --release -p treetop-bundle-cli
+
+      - name: Check a complete bundle
+        id: valid
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/valid
+          deny-warnings: true
+      - name: Check one module
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/valid
+          manifest: treetop-module.toml
+      - name: Check a standalone policy with schema and labels
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/valid
+          target: policy
+          manifest: policy.cedar
+          schema: schema.cedarschema
+          labels: labels.json
+      - name: Check a multi-module bundle with an import
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/multi-module
+      - name: Check paths containing spaces
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/path with spaces
+
+      - name: Allow a warning by default
+        id: warning-allowed
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/warning
+          target: policy
+          manifest: policy.cedar
+          labels: labels.json
+      - name: Deny the same warning
+        id: warning-denied
+        continue-on-error: true
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/warning
+          target: policy
+          manifest: policy.cedar
+          labels: labels.json
+          deny-warnings: true
+      - name: Reject invalid policy content
+        id: invalid
+        continue-on-error: true
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/invalid
+
+      - name: Build a deterministic unsigned bundle
+        id: build
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/valid
+          build-output: ${{ runner.temp }}/treetop-bundle.tar.gz
+          deny-warnings: true
+      - name: Verify scenario outcomes and archive hash
+        shell: bash
+        env:
+          ARCHIVE_PATH: ${{ steps.build.outputs.archive-path }}
+          ARCHIVE_SHA256: ${{ steps.build.outputs.archive-sha256 }}
+          INVALID_OUTCOME: ${{ steps.invalid.outcome }}
+          VALID_RESULT: ${{ steps.valid.outputs.valid }}
+          WARNING_ALLOWED_RESULT: ${{ steps.warning-allowed.outputs.valid }}
+          WARNING_DENIED_OUTCOME: ${{ steps.warning-denied.outcome }}
+        run: |
+          [[ "$VALID_RESULT" == "true" ]]
+          [[ "$WARNING_ALLOWED_RESULT" == "true" ]]
+          [[ "$WARNING_DENIED_OUTCOME" == "failure" ]]
+          [[ "$INVALID_OUTCOME" == "failure" ]]
+          node -e '
+            const crypto = require("node:crypto");
+            const fs = require("node:fs");
+            const actual = crypto.createHash("sha256")
+              .update(fs.readFileSync(process.env.ARCHIVE_PATH)).digest("hex");
+            if (actual !== process.env.ARCHIVE_SHA256) process.exit(1);
+          '
+
+  released-linux:
+    name: Download released CLI on ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86-64
+            runner: ubuntu-24.04
+          - name: Linux ARM64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download, verify, and run treetop-bundle v0.0.3
+        uses: ./
+        with:
+          binary-version: 0.0.3
+          working-directory: test/fixtures/valid
+          deny-warnings: true

@@ -1,0 +1,8 @@
+namespace ExampleCo::Identity {
+    entity User;
+    entity Tenant;
+    action "view" appliesTo {
+        principal: User,
+        resource: Tenant,
+    };
+}

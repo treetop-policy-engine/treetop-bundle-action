@@ -1,0 +1,6 @@
+format_version = 1
+name = "production"
+
+[[modules]]
+manifest = "treetop-module.toml"
+role = "ordinary"

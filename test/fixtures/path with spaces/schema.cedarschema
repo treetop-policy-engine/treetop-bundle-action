@@ -1,0 +1,8 @@
+namespace ExampleCo::DNS {
+    entity User;
+    entity Host;
+    action "read" appliesTo {
+        principal: User,
+        resource: Host,
+    };
+}

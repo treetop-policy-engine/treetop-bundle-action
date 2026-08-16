@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "ExampleCo::DNS::Host",
+    "field": "name",
+    "output": "labels",
+    "patterns": [
+      {
+        "name": "production",
+        "regex": "^prod-"
+      },
+      {
+        "name": "staging",
+        "regex": "^staging-"
+      }
+    ]
+  }
+]
