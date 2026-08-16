@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: treetop-policy-engine/treetop-bundle
-          ref: e2ba9b7c89541fe54aafcbc19ce5de226dcaccca
+          ref: cf996259d187e3a5ac46384c6a4eda00e89419e4 # v0.0.4
           path: treetop-bundle
       - name: Install Rust
         uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
@@ -166,7 +166,7 @@ jobs:
             if (actual !== process.env.ARCHIVE_SHA256) process.exit(1);
           '
 
-  released-linux:
+  released-native:
     name: Download released CLI on ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -177,12 +177,16 @@ jobs:
             runner: ubuntu-24.04
           - name: Linux ARM64
             runner: ubuntu-24.04-arm
+          - name: macOS ARM64
+            runner: macos-15
+          - name: Windows x86-64
+            runner: windows-2025
     steps:
       - name: Checkout action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Download, verify, and run treetop-bundle v0.0.3
+      - name: Download, verify, and run treetop-bundle v0.0.4
         uses: ./
         with:
-          binary-version: 0.0.3
+          binary-version: 0.0.4
           working-directory: test/fixtures/valid
           deny-warnings: true

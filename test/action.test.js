@@ -1,10 +1,16 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
-const { assertCliResult, main, runAction } = require("../src/action");
+const {
+  DEFAULT_BINARY_VERSION,
+  assertCliResult,
+  main,
+  runAction,
+} = require("../src/action");
 
 class FakeWorkflow {
   constructor(inputs = {}) {
@@ -53,6 +59,29 @@ class FakeWorkflow {
 
 const environment = { GITHUB_WORKSPACE: path.resolve(__dirname, "fixtures/valid") };
 const executable = path.join(os.tmpdir(), "treetop-bundle-test-binary");
+
+test("keeps the runtime and action metadata on the same default CLI release", async () => {
+  const workflow = new FakeWorkflow();
+  let requestedVersion;
+  await runAction({
+    environment,
+    workflow,
+    async resolveExecutable(options) {
+      requestedVersion = options.version;
+      return { executable, version: options.version };
+    },
+    async runCli() {
+      return { code: 0, stderr: "", stdout: '{"valid":true,"diagnostics":[]}\n' };
+    },
+  });
+
+  const metadata = fs.readFileSync(path.resolve(__dirname, "../action.yml"), "utf8");
+  const binaryVersionInput = metadata.match(/^  binary-version:\n(?: {4}.+\n)+/mu)?.[0];
+  assert.equal(requestedVersion, DEFAULT_BINARY_VERSION);
+  assert.ok(binaryVersionInput, "action.yml must declare the binary-version input");
+  assert.match(binaryVersionInput, new RegExp(`default: ${DEFAULT_BINARY_VERSION}\\n`, "u"));
+  assert.equal(workflow.outputs.get("binary-version"), DEFAULT_BINARY_VERSION);
+});
 
 test("publishes valid check outputs and a successful summary", async () => {
   const workflow = new FakeWorkflow();

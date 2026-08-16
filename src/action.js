@@ -8,6 +8,8 @@ const { emitDiagnostics, validationSummary } = require("./diagnostics");
 const { installBinary } = require("./installer");
 const { Workflow } = require("./workflow");
 
+const DEFAULT_BINARY_VERSION = "0.0.4";
+
 async function resolveExecutable(binaryInput, workspace, installerOptions) {
   if (binaryInput) {
     const executable = path.isAbsolute(binaryInput)
@@ -63,17 +65,19 @@ async function runAction(dependencies = {}) {
     await fsp.mkdir(path.dirname(buildOutput), { recursive: true });
   }
 
-  const version = workflow.input("binary-version", "0.0.3") || "0.0.3";
+  const version =
+    workflow.input("binary-version", DEFAULT_BINARY_VERSION) || DEFAULT_BINARY_VERSION;
+  const installerOptions = {
+    arch: dependencies.arch || process.arch,
+    environment,
+    fetchImplementation: dependencies.fetchImplementation,
+    platform: dependencies.platform || process.platform,
+    token: workflow.input("github-token"),
+    version,
+  };
   const resolved = dependencies.resolveExecutable
-    ? await dependencies.resolveExecutable()
-    : await resolveExecutable(workflow.input("binary-path"), workspace, {
-        arch: dependencies.arch || process.arch,
-        environment,
-        fetchImplementation: dependencies.fetchImplementation,
-        platform: dependencies.platform || process.platform,
-        token: workflow.input("github-token"),
-        version,
-      });
+    ? await dependencies.resolveExecutable(installerOptions)
+    : await resolveExecutable(workflow.input("binary-path"), workspace, installerOptions);
   const executable = path.resolve(resolved.executable);
   workflow.setOutput("binary-path", executable);
   workflow.setOutput("binary-version", resolved.version);
@@ -123,4 +127,11 @@ async function main(dependencies = {}) {
   }
 }
 
-module.exports = { assertCliResult, assertDiagnostics, main, resolveExecutable, runAction };
+module.exports = {
+  DEFAULT_BINARY_VERSION,
+  assertCliResult,
+  assertDiagnostics,
+  main,
+  resolveExecutable,
+  runAction,
+};
