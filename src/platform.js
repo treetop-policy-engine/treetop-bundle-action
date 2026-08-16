@@ -3,10 +3,8 @@
 const ASSETS = new Map([
   ["linux-x64", "treetop-bundle-x86_64-linux-musl.tar.gz"],
   ["linux-arm64", "treetop-bundle-aarch64-linux-musl.tar.gz"],
-  ["darwin-x64", "treetop-bundle-x86_64-macos.tar.gz"],
   ["darwin-arm64", "treetop-bundle-aarch64-macos.tar.gz"],
   ["win32-x64", "treetop-bundle-x86_64-windows.zip"],
-  ["win32-arm64", "treetop-bundle-aarch64-windows.zip"],
 ]);
 
 function releaseAsset(platform = process.platform, arch = process.arch) {
@@ -15,7 +13,8 @@ function releaseAsset(platform = process.platform, arch = process.arch) {
   if (!asset) {
     throw new Error(
       `treetop-bundle does not publish a CLI for ${platform}/${arch}; ` +
-        `supported runners are Linux, macOS, and Windows on x64 or arm64`,
+        `supported runners are Linux on x64 or arm64, macOS on arm64, ` +
+        `and Windows on x64`,
     );
   }
   return asset;

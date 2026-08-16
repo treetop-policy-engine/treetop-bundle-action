@@ -48,17 +48,11 @@ jobs:
           - name: Linux ARM64
             runner: ubuntu-24.04-arm
             binary: treetop-bundle/target/release/treetop-bundle
-          - name: macOS x86-64
-            runner: macos-15-intel
-            binary: treetop-bundle/target/release/treetop-bundle
           - name: macOS ARM64
             runner: macos-15
             binary: treetop-bundle/target/release/treetop-bundle
           - name: Windows x86-64
             runner: windows-2025
-            binary: treetop-bundle/target/release/treetop-bundle.exe
-          - name: Windows ARM64
-            runner: windows-11-arm
             binary: treetop-bundle/target/release/treetop-bundle.exe
     steps:
       - name: Checkout action
