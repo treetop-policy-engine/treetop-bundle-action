@@ -98,14 +98,13 @@ private signing key.
 | `working-directory` | `.` | Base directory for policy paths |
 | `deny-warnings` | `false` | Treat warnings as validation failures |
 | `build-output` | | Build an unsigned archive at this path |
-| `binary-version` | `0.0.3` | Exact CLI release, without a leading `v` |
+| `binary-version` | `0.0.4` | Exact CLI release, without a leading `v` |
 | `binary-path` | | Use an existing CLI instead of downloading one |
 | `github-token` | | Optional token for release downloads |
 
-`binary-version` never accepts `latest` or a moving major version. Releases up
-to `0.0.3` contain Linux x86-64 and ARM64 binaries. Apple-silicon macOS and
-x86-64 Windows downloads become available with the next `treetop-bundle`
-release; the action already recognizes those native archives.
+`binary-version` never accepts `latest` or a moving major version. Release
+`0.0.4` provides native binaries for Linux x86-64 and ARM64, Apple-silicon
+macOS, and Windows x86-64.
 
 ## Outputs
 
@@ -135,5 +134,6 @@ CI additionally compiles the pinned Rust CLI on native Linux x86-64 and ARM64,
 Apple-silicon macOS, and Windows x86-64 runners. Every runner checks valid and
 invalid bundles, standalone policy and module modes, warning handling,
 multi-module imports, paths with spaces, deterministic builds, output hashes,
-and use of a preinstalled executable. Separate Linux jobs exercise real
-release downloads and checksum verification on both architectures.
+and use of a preinstalled executable. A second four-platform matrix exercises
+real release downloads, archive extraction, checksum verification, and CLI
+execution on every supported native runner.
