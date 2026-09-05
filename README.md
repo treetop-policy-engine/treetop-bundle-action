@@ -98,12 +98,17 @@ private signing key.
 | `working-directory` | `.` | Base directory for policy paths |
 | `deny-warnings` | `false` | Treat warnings as validation failures |
 | `build-output` | | Build an unsigned archive at this path |
-| `binary-version` | `0.0.4` | Exact CLI release, without a leading `v` |
+| `binary-version` | `0.0.7` | Exact CLI release, without a leading `v` |
 | `binary-path` | | Use an existing CLI instead of downloading one |
 | `github-token` | | Optional token for release downloads |
 
+The default CLI uses Core 0.0.25. It combines label rules for different resource
+kinds under one output owner and rejects duplicate destinations within a kind.
+Rebuild and re-sign older archives with the upgraded CLI because archive
+validation checks the exact generator versions.
+
 `binary-version` never accepts `latest` or a moving major version. Release
-`0.0.4` provides native binaries for Linux x86-64 and ARM64, Apple-silicon
+`0.0.7` provides native binaries for Linux x86-64 and ARM64, Apple-silicon
 macOS, and Windows x86-64.
 
 ## Outputs
