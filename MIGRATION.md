@@ -4,8 +4,8 @@ Action v2 defaults to Bundle CLI 0.1.0 and the coordinated Core 0.1.0 contract.
 Upgrade Core, Bundle, REST, and downstream consumers together. Early releases
 prioritize correctness and uniform contracts over compatibility.
 
-Use a reviewed immutable action commit in protected workflows. `@v2` will name
-the new major release after approval; it has not been published by this PR.
+Use a reviewed immutable action commit in protected workflows. `@v2` identifies
+the new major release; `@v2.0.0` identifies this exact version.
 
 ## Labels and archives
 
@@ -29,13 +29,13 @@ Checksum manifests now require flat, exact asset filenames. Path-prefixed legacy
 aliases are rejected. Duplicate entries, checksum mismatches, unsupported runners,
 and malformed CLI responses remain errors; warning policy is unchanged.
 
-## Candidate verification
+## Release verification
 
-CI builds the exact unmerged Bundle revision on Linux x64/ARM64, macOS ARM64, and
-Windows x64. It runs the existing validation/build scenarios and the production
-installer against native candidate archives served over local HTTP. This verifies
-packaging, downloading, checksums, extraction, and execution before a release exists.
-For local evaluation, build that candidate and supply `binary-path`.
+CI builds the immutable Bundle 0.1.0 release revision on Linux x64/ARM64, macOS
+ARM64, and Windows x64. It runs validation/build scenarios and verifies native
+archive packaging through the production installer using a local HTTP fixture.
+A separate matrix downloads the actual published CLI assets, verifies checksums,
+executes validation, and checks reuse of the installed binary on every platform.
+For local development, build the same release source and supply `binary-path`.
 
-After user approval, publish Core and Bundle 0.1.0 before action v2. No merge, tag,
-or release is authorized by preparing this candidate.
+Publish Core and Bundle 0.1.0 before action v2.

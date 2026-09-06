@@ -1,7 +1,7 @@
 "use strict";
 
-// Exercise the production installer and action with an unpublished, native
-// candidate archive. Only the release URL is mapped to the local HTTP fixture.
+// Exercise the production installer and action with a native source archive.
+// Only the release URL is mapped to the local HTTP fixture.
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs/promises");

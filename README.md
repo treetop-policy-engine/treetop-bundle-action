@@ -109,7 +109,7 @@ syntax and format 1 bundles are rejected. Migrate source manifests to format 2,
 rebuild archives, and re-sign. See [MIGRATION.md](MIGRATION.md).
 
 `binary-version` never accepts `latest` or a moving major version. The coordinated
-`0.1.0` release will provide native binaries for Linux x86-64 and ARM64, Apple-silicon
+`0.1.0` release provides native binaries for Linux x86-64 and ARM64, Apple-silicon
 macOS, and Windows x86-64.
 
 ## Outputs
@@ -144,7 +144,7 @@ and use of a preinstalled executable. A second four-platform matrix exercises
 real release downloads, archive extraction, checksum verification, and CLI
 execution on every supported native runner.
 
-The candidate CI builds an immutable Bundle revision on all four runner platforms,
-packages it, and exercises the production download/checksum/extraction pipeline
-over local HTTP. No unpublished GitHub release is assumed. Use `binary-path` for
-local candidate evaluation until prerequisite releases are approved and published.
+CI also builds the immutable Bundle 0.1.0 release revision on all four runner
+platforms, packages it, and exercises the production installer over local HTTP.
+These source-archive checks supplement the real published-asset download matrix.
+Use `binary-path` for local development against an explicitly built executable.

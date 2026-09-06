@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: treetop-policy-engine/treetop-bundle
-          ref: 9a0463383c4837d2076f2d63862abae0832083fd # 0.1.0 candidate
+          ref: c2d36f44ecbda5120ab5087ea1a171bb3b3c8acc # v0.1.0
           path: treetop-bundle
       - name: Install Rust
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
@@ -185,8 +185,8 @@ jobs:
             if (actual !== process.env.ARCHIVE_SHA256) process.exit(1);
           '
 
-  candidate-download:
-    name: Package, download, and verify candidate CLI on ${{ matrix.name }}
+  source-download:
+    name: Package, download, and verify release source on ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -211,11 +211,11 @@ jobs:
     steps:
       - name: Checkout action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Checkout exact candidate source
+      - name: Checkout exact release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: treetop-policy-engine/treetop-bundle
-          ref: 9a0463383c4837d2076f2d63862abae0832083fd
+          ref: c2d36f44ecbda5120ab5087ea1a171bb3b3c8acc
           path: treetop-bundle
           persist-credentials: false
       - name: Install Rust
@@ -232,10 +232,62 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes musl-tools
-      - name: Build native candidate
+      - name: Build native release source
         working-directory: treetop-bundle
         run: cargo build --locked --release --target ${{ matrix.target }} -p treetop-bundle-cli
-      - name: Download, verify, extract, and run candidate through production installer
+      - name: Download, verify, extract, and run source archive through production installer
         env:
           CANDIDATE_BINARY: treetop-bundle/target/${{ matrix.target }}/release/treetop-bundle${{ matrix.extension }}
         run: node scripts/verify-candidate-download.js
+
+  release-download:
+    name: Published CLI download on ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86-64
+            runner: ubuntu-24.04
+          - name: Linux ARM64
+            runner: ubuntu-24.04-arm
+          - name: macOS ARM64
+            runner: macos-15
+          - name: Windows x86-64
+            runner: windows-2025
+    steps:
+      - name: Checkout action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download published CLI and validate a bundle
+        id: downloaded
+        uses: ./
+        with:
+          working-directory: test/fixtures/valid
+          deny-warnings: true
+      - name: Reuse installed release and validate again
+        id: cached
+        uses: ./
+        with:
+          working-directory: test/fixtures/valid
+          deny-warnings: true
+      - name: Verify release version and installed executable
+        shell: bash
+        env:
+          DOWNLOADED_BINARY: ${{ steps.downloaded.outputs.binary-path }}
+          CACHED_BINARY: ${{ steps.cached.outputs.binary-path }}
+          REQUESTED_VERSION: ${{ steps.downloaded.outputs.binary-version }}
+          VALID: ${{ steps.downloaded.outputs.valid }}
+          CACHED_VALID: ${{ steps.cached.outputs.valid }}
+        run: |
+          node -e '
+            const assert = require("node:assert/strict");
+            const { spawnSync } = require("node:child_process");
+            assert.equal(process.env.VALID, "true");
+            assert.equal(process.env.CACHED_VALID, "true");
+            assert.equal(process.env.REQUESTED_VERSION, "0.1.0");
+            assert.ok(process.env.DOWNLOADED_BINARY);
+            assert.equal(process.env.CACHED_BINARY, process.env.DOWNLOADED_BINARY);
+            const result = spawnSync(process.env.DOWNLOADED_BINARY, ["--version"], { encoding: "utf8" });
+            assert.equal(result.status, 0, result.stderr);
+            assert.match(result.stdout, /\b0\.1\.0\b/u);
+          '
