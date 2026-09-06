@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: treetop-policy-engine/treetop-bundle
-          ref: cf996259d187e3a5ac46384c6a4eda00e89419e4 # v0.0.4
+          ref: ab5c57c37746e540476f7bf8a71cb2037d25d105 # v0.0.7
           path: treetop-bundle
       - name: Install Rust
         uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
@@ -184,9 +184,9 @@ jobs:
     steps:
       - name: Checkout action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Download, verify, and run treetop-bundle v0.0.4
+      - name: Download, verify, and run treetop-bundle v0.0.7
         uses: ./
         with:
-          binary-version: 0.0.4
+          binary-version: 0.0.7
           working-directory: test/fixtures/valid
           deny-warnings: true
