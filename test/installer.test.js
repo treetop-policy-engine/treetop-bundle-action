@@ -40,24 +40,14 @@ test("parses GNU and binary-mode checksum entries", () => {
   assert.equal(parsed.get("second.zip"), second.toLowerCase());
 });
 
-test("finds legacy path-prefixed assets without accepting ambiguity", () => {
+test("rejects legacy path-prefixed checksum aliases", () => {
   const hash = "d".repeat(64);
   const asset = "treetop-bundle-x86_64-linux-musl.tar.gz";
-  assert.equal(
-    checksumForAsset(new Map([[`release-artifacts/${asset}`, hash]]), asset),
-    hash,
-  );
-  assert.throws(
-    () =>
-      checksumForAsset(
-        new Map([
-          [asset, hash],
-          [`release-artifacts/${asset}`, hash],
-        ]),
-        asset,
-      ),
-    /ambiguous entries/u,
-  );
+  assert.equal(checksumForAsset(new Map([[asset, hash]]), asset), hash);
+  assert.throws(() => checksumForAsset(new Map([[`release-artifacts/${asset}`, hash]]), asset), /does not contain/u);
+  for (const prefix of ["release-artifacts/", "./", "..\\"]) {
+    assert.throws(() => parseChecksums(`${hash}  ${prefix}${asset}\n`), /flat asset names/u);
+  }
 });
 
 test("rejects malformed and duplicate checksum entries", () => {

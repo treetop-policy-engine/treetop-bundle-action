@@ -33,6 +33,9 @@ function parseChecksums(contents) {
       throw new Error(`invalid SHA256SUMS line: ${rawLine}`);
     }
     const filename = match[2];
+    if (filename.includes("/") || filename.includes("\\")) {
+      throw new Error(`SHA256SUMS requires flat asset names: ${filename}`);
+    }
     if (checksums.has(filename)) {
       throw new Error(`duplicate SHA256SUMS entry for ${filename}`);
     }
@@ -42,16 +45,11 @@ function parseChecksums(contents) {
 }
 
 function checksumForAsset(checksums, asset) {
-  const matches = [...checksums.entries()].filter(
-    ([filename]) => path.posix.basename(filename.replaceAll("\\", "/")) === asset,
-  );
-  if (matches.length === 0) {
+  const checksum = checksums.get(asset);
+  if (!checksum) {
     throw new Error(`SHA256SUMS does not contain ${asset}`);
   }
-  if (matches.length > 1) {
-    throw new Error(`SHA256SUMS contains ambiguous entries for ${asset}`);
-  }
-  return matches[0][1];
+  return checksum;
 }
 
 async function sha256(filename) {

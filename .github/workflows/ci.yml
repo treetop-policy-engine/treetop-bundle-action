@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Node.js
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
@@ -61,14 +61,14 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: treetop-policy-engine/treetop-bundle
-          ref: ab5c57c37746e540476f7bf8a71cb2037d25d105 # v0.0.7
+          ref: 9a0463383c4837d2076f2d63862abae0832083fd # 0.1.0 candidate
           path: treetop-bundle
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
         with:
           toolchain: stable
       - name: Cache Cargo artifacts
-        uses: Swatinem/rust-cache@49a0bdc70d2e1b713ca9e2869b211fcce03d3c1c # v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: treetop-bundle -> target
       - name: Build native CLI
@@ -136,6 +136,21 @@ jobs:
           binary-path: ${{ matrix.binary }}
           working-directory: test/fixtures/invalid
 
+      - name: Reject legacy format 1
+        id: legacy
+        continue-on-error: true
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/legacy
+      - name: Reject duplicate declared targets
+        id: duplicate
+        continue-on-error: true
+        uses: ./
+        with:
+          binary-path: ${{ matrix.binary }}
+          working-directory: test/fixtures/duplicate-target
+
       - name: Build a deterministic unsigned bundle
         id: build
         uses: ./
@@ -150,6 +165,8 @@ jobs:
           ARCHIVE_PATH: ${{ steps.build.outputs.archive-path }}
           ARCHIVE_SHA256: ${{ steps.build.outputs.archive-sha256 }}
           INVALID_OUTCOME: ${{ steps.invalid.outcome }}
+          LEGACY_OUTCOME: ${{ steps.legacy.outcome }}
+          DUPLICATE_OUTCOME: ${{ steps.duplicate.outcome }}
           VALID_RESULT: ${{ steps.valid.outputs.valid }}
           WARNING_ALLOWED_RESULT: ${{ steps.warning-allowed.outputs.valid }}
           WARNING_DENIED_OUTCOME: ${{ steps.warning-denied.outcome }}
@@ -158,6 +175,8 @@ jobs:
           [[ "$WARNING_ALLOWED_RESULT" == "true" ]]
           [[ "$WARNING_DENIED_OUTCOME" == "failure" ]]
           [[ "$INVALID_OUTCOME" == "failure" ]]
+          [[ "$LEGACY_OUTCOME" == "failure" ]]
+          [[ "$DUPLICATE_OUTCOME" == "failure" ]]
           node -e '
             const crypto = require("node:crypto");
             const fs = require("node:fs");
@@ -166,8 +185,8 @@ jobs:
             if (actual !== process.env.ARCHIVE_SHA256) process.exit(1);
           '
 
-  released-native:
-    name: Download released CLI on ${{ matrix.name }}
+  candidate-download:
+    name: Package, download, and verify candidate CLI on ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -175,18 +194,48 @@ jobs:
         include:
           - name: Linux x86-64
             runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            extension: ""
           - name: Linux ARM64
             runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            extension: ""
           - name: macOS ARM64
             runner: macos-15
+            target: aarch64-apple-darwin
+            extension: ""
           - name: Windows x86-64
             runner: windows-2025
+            target: x86_64-pc-windows-msvc
+            extension: ".exe"
     steps:
       - name: Checkout action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Download, verify, and run treetop-bundle v0.0.7
-        uses: ./
+      - name: Checkout exact candidate source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          binary-version: 0.0.7
-          working-directory: test/fixtures/valid
-          deny-warnings: true
+          repository: treetop-policy-engine/treetop-bundle
+          ref: 9a0463383c4837d2076f2d63862abae0832083fd
+          path: treetop-bundle
+          persist-credentials: false
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: treetop-bundle -> target
+      - name: Install musl tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes musl-tools
+      - name: Build native candidate
+        working-directory: treetop-bundle
+        run: cargo build --locked --release --target ${{ matrix.target }} -p treetop-bundle-cli
+      - name: Download, verify, extract, and run candidate through production installer
+        env:
+          CANDIDATE_BINARY: treetop-bundle/target/${{ matrix.target }}/release/treetop-bundle${{ matrix.extension }}
+        run: node scripts/verify-candidate-download.js

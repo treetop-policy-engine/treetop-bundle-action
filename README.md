@@ -27,13 +27,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: treetop-policy-engine/treetop-bundle-action@v1
+      - uses: treetop-policy-engine/treetop-bundle-action@v2
         with:
           manifest: treetop-bundle.toml
           deny-warnings: true
 ```
 
-Use an immutable full commit SHA instead of `v1` in protected workflows. A
+Use an immutable full commit SHA instead of `v2` in protected workflows. A
 major-version tag is shown above for readability.
 
 The default target is inferred from `treetop-bundle.toml`,
@@ -41,7 +41,7 @@ The default target is inferred from `treetop-bundle.toml`,
 conventional names:
 
 ```yaml
-- uses: treetop-policy-engine/treetop-bundle-action@v1
+- uses: treetop-policy-engine/treetop-bundle-action@v2
   with:
     target: policy
     manifest: permissions/read.cedar
@@ -58,7 +58,7 @@ strategy:
     policy: [identity, billing, infrastructure]
 steps:
   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-  - uses: treetop-policy-engine/treetop-bundle-action@v1
+  - uses: treetop-policy-engine/treetop-bundle-action@v2
     with:
       working-directory: policy/${{ matrix.policy }}
       deny-warnings: true
@@ -71,7 +71,7 @@ The same validation is performed before anything is written.
 
 ```yaml
 - id: bundle
-  uses: treetop-policy-engine/treetop-bundle-action@v1
+  uses: treetop-policy-engine/treetop-bundle-action@v2
   with:
     manifest: treetop-bundle.toml
     build-output: dist/policy-bundle.tar.gz
@@ -98,17 +98,18 @@ private signing key.
 | `working-directory` | `.` | Base directory for policy paths |
 | `deny-warnings` | `false` | Treat warnings as validation failures |
 | `build-output` | | Build an unsigned archive at this path |
-| `binary-version` | `0.0.7` | Exact CLI release, without a leading `v` |
+| `binary-version` | `0.1.0` | Exact CLI release, without a leading `v` |
 | `binary-path` | | Use an existing CLI instead of downloading one |
 | `github-token` | | Optional token for release downloads |
 
-The default CLI uses Core 0.0.25. It combines label rules for different resource
-kinds under one output owner and rejects duplicate destinations within a kind.
-Rebuild and re-sign older archives with the upgraded CLI because archive
-validation checks the exact generator versions.
+Action v2 requires the coordinated Bundle/Core 0.1.0 contract. Label rules declare
+`target.resource_type` and `target.attribute`; one exact resource-type/attribute
+tuple has one owner. Different types can reuse attribute names. Old `kind`/`output`
+syntax and format 1 bundles are rejected. Migrate source manifests to format 2,
+rebuild archives, and re-sign. See [MIGRATION.md](MIGRATION.md).
 
-`binary-version` never accepts `latest` or a moving major version. Release
-`0.0.7` provides native binaries for Linux x86-64 and ARM64, Apple-silicon
+`binary-version` never accepts `latest` or a moving major version. The coordinated
+`0.1.0` release will provide native binaries for Linux x86-64 and ARM64, Apple-silicon
 macOS, and Windows x86-64.
 
 ## Outputs
@@ -142,3 +143,8 @@ multi-module imports, paths with spaces, deterministic builds, output hashes,
 and use of a preinstalled executable. A second four-platform matrix exercises
 real release downloads, archive extraction, checksum verification, and CLI
 execution on every supported native runner.
+
+The candidate CI builds an immutable Bundle revision on all four runner platforms,
+packages it, and exercises the production download/checksum/extraction pipeline
+over local HTTP. No unpublished GitHub release is assumed. Use `binary-path` for
+local candidate evaluation until prerequisite releases are approved and published.

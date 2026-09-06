@@ -1,13 +1,15 @@
 [
   {
-    "kind": "ExampleCo::DNS::Host",
     "field": "name",
-    "output": "labels",
     "patterns": [
       {
         "name": "production",
         "regex": "^prod-"
       }
-    ]
+    ],
+    "target": {
+      "resource_type": "ExampleCo::DNS::Host",
+      "attribute": "labels"
+    }
   }
 ]
