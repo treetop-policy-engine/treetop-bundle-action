@@ -64,7 +64,7 @@ jobs:
           ref: ab5c57c37746e540476f7bf8a71cb2037d25d105 # v0.0.7
           path: treetop-bundle
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # v1
         with:
           toolchain: stable
       - name: Cache Cargo artifacts
