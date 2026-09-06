@@ -8,7 +8,7 @@ const { emitDiagnostics, validationSummary } = require("./diagnostics");
 const { installBinary } = require("./installer");
 const { Workflow } = require("./workflow");
 
-const DEFAULT_BINARY_VERSION = "0.0.7";
+const DEFAULT_BINARY_VERSION = "0.1.0";
 
 async function resolveExecutable(binaryInput, workspace, installerOptions) {
   if (binaryInput) {
