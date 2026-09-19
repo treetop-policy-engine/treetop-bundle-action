@@ -30,7 +30,7 @@ async function main() {
   const archive = path.join(temporary, asset);
   let server;
   try {
-    assert.match(run(source, ["--version"]), /0\.1\.0/u);
+    assert.equal(run(source, ["--version"]).trim(), `treetop-bundle-cli ${DEFAULT_BINARY_VERSION}`);
     await fs.mkdir(staging);
     await fs.copyFile(source, path.join(staging, binaryName));
     if (process.platform === "win32") {
