@@ -64,7 +64,7 @@ jobs:
           ref: c2d36f44ecbda5120ab5087ea1a171bb3b3c8acc # v0.1.0
           path: treetop-bundle
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
         with:
           toolchain: stable
       - name: Cache Cargo artifacts
@@ -219,7 +219,7 @@ jobs:
           path: treetop-bundle
           persist-credentials: false
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
