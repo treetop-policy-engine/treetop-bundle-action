@@ -34,7 +34,9 @@ jobs:
 ```
 
 Use an immutable full commit SHA instead of `v2` in protected workflows. A
-major-version tag is shown above for readability.
+major-version tag is shown above for readability. Published v2.0.0 defaults to
+CLI 0.1.0; the pending dependency refresh defaults to CLI 0.2.0. To select the
+new CLI with the published action, set `binary-version: 0.2.0` explicitly.
 
 The default target is inferred from `treetop-bundle.toml`,
 `treetop-module.toml`, or a `.cedar` filename. An explicit target supports less
@@ -98,18 +100,18 @@ private signing key.
 | `working-directory` | `.` | Base directory for policy paths |
 | `deny-warnings` | `false` | Treat warnings as validation failures |
 | `build-output` | | Build an unsigned archive at this path |
-| `binary-version` | `0.1.0` | Exact CLI release, without a leading `v` |
+| `binary-version` | `0.2.0` | Exact CLI release, without a leading `v` |
 | `binary-path` | | Use an existing CLI instead of downloading one |
 | `github-token` | | Optional token for release downloads |
 
-Action v2 requires the coordinated Bundle/Core 0.1.0 contract. Label rules declare
+This branch defaults to the coordinated Bundle/Core 0.2.0 contract. Label rules declare
 `target.resource_type` and `target.attribute`; one exact resource-type/attribute
 tuple has one owner. Different types can reuse attribute names. Old `kind`/`output`
 syntax and format 1 bundles are rejected. Migrate source manifests to format 2,
 rebuild archives, and re-sign. See [MIGRATION.md](MIGRATION.md).
 
 `binary-version` never accepts `latest` or a moving major version. The coordinated
-`0.1.0` release provides native binaries for Linux x86-64 and ARM64, Apple-silicon
+`0.2.0` release provides native binaries for Linux x86-64 and ARM64, Apple-silicon
 macOS, and Windows x86-64.
 
 ## Outputs
@@ -144,7 +146,7 @@ and use of a preinstalled executable. A second four-platform matrix exercises
 real release downloads, archive extraction, checksum verification, and CLI
 execution on every supported native runner.
 
-CI also builds the immutable Bundle 0.1.0 release revision on all four runner
+CI also builds the immutable Bundle 0.2.0 release revision on all four runner
 platforms, packages it, and exercises the production installer over local HTTP.
 These source-archive checks supplement the real published-asset download matrix.
 Use `binary-path` for local development against an explicitly built executable.

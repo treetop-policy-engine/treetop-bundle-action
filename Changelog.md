@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Breaking changes
+
+- Default to Bundle CLI 0.2.0, Core 0.2.0, and Cedar 4.13.0. Rebuild and re-sign
+  archives for consumers requiring these exact generator versions. Manifest
+  format 2 and label syntax are unchanged; see [MIGRATION.md](MIGRATION.md).
+
+### Changed
+
+- Refresh Rust toolchain action pins and the artifact-upload example. Verify
+  Bundle 0.2.0 source, native archives, and published downloads on all platforms.
+
 ## [2.0.0] - 2026-09-06
 
 ### Breaking changes
