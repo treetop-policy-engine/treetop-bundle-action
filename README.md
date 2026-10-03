@@ -27,23 +27,23 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: treetop-policy-engine/treetop-bundle-action@v2
+      - uses: treetop-policy-engine/treetop-bundle-action@v3
         with:
           manifest: treetop-bundle.toml
           deny-warnings: true
 ```
 
-Use an immutable full commit SHA instead of `v2` in protected workflows. A
-major-version tag is shown above for readability. Published v2.0.0 defaults to
-CLI 0.1.0; the main branch defaults to CLI 0.3.0. To select the
-new CLI with the published action, set `binary-version: 0.3.0` explicitly.
+Use an immutable full commit SHA instead of `v3` in protected workflows. A
+major-version tag is shown above for readability. Action v3.0.0 defaults to
+Bundle CLI 0.3.0 and Core 0.3.0. Rebuild and re-sign archives before using them
+with the updated server. Existing v2 tags retain their CLI 0.1.0 default.
 
 The default target is inferred from `treetop-bundle.toml`,
 `treetop-module.toml`, or a `.cedar` filename. An explicit target supports less
 conventional names:
 
 ```yaml
-- uses: treetop-policy-engine/treetop-bundle-action@v2
+- uses: treetop-policy-engine/treetop-bundle-action@v3
   with:
     target: policy
     manifest: permissions/read.cedar
@@ -60,7 +60,7 @@ strategy:
     policy: [identity, billing, infrastructure]
 steps:
   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-  - uses: treetop-policy-engine/treetop-bundle-action@v2
+  - uses: treetop-policy-engine/treetop-bundle-action@v3
     with:
       working-directory: policy/${{ matrix.policy }}
       deny-warnings: true
@@ -73,7 +73,7 @@ The same validation is performed before anything is written.
 
 ```yaml
 - id: bundle
-  uses: treetop-policy-engine/treetop-bundle-action@v2
+  uses: treetop-policy-engine/treetop-bundle-action@v3
   with:
     manifest: treetop-bundle.toml
     build-output: dist/policy-bundle.tar.gz
@@ -104,7 +104,7 @@ private signing key.
 | `binary-path` | | Use an existing CLI instead of downloading one |
 | `github-token` | | Optional token for release downloads |
 
-This branch defaults to the coordinated Bundle/Core 0.3.0 contract. Label rules declare
+Action v3 defaults to the coordinated Bundle/Core 0.3.0 contract. Label rules declare
 `target.resource_type` and `target.attribute`; one exact resource-type/attribute
 tuple has one owner. Different types can reuse attribute names. Old `kind`/`output`
 syntax and format 1 bundles are rejected. Migrate source manifests to format 2,

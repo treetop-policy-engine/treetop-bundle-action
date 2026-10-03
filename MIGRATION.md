@@ -1,8 +1,8 @@
-# Bundle CLI 0.3 dependency refresh
+# Action v3 migration
 
-The main branch defaults to Bundle CLI 0.3.0, Core 0.3.0, and Cedar
-4.13.0. Published action v2.0.0 retains its CLI 0.1.0 default; set
-`binary-version: 0.3.0` explicitly to use the new CLI with that release.
+Action v3.0.0 defaults to Bundle CLI 0.3.0, Core 0.3.0, and Cedar 4.13.0.
+Update workflow pins from v2 to a reviewed v3 commit. Existing v2 and v2.0.0
+tags retain their CLI 0.1.0 default.
 
 Rebuild and re-sign archives before using them with the updated REST server.
 Archive generator versions must match the server's Bundle/Core/Cedar versions
@@ -14,9 +14,9 @@ to reject them.
 
 CI builds the immutable Bundle 0.3.0 release revision, tests native packaging,
 and downloads the actual published CLI assets with checksum verification on
-Linux x64/ARM64, macOS ARM64, and Windows x64. Release the updated action only
-after those checks pass. This default changes archive compatibility and requires
-a new major action release; keep the existing v2 and v2.0.0 contracts fixed.
+Linux x64/ARM64, macOS ARM64, and Windows x64. The v3 major release makes the
+archive-compatibility change explicit; the existing v2 and v2.0.0 contracts
+remain fixed.
 
 ## Previous action v2 migration
 

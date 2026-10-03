@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-03
+
 ### Breaking changes
 
 - Default to Bundle CLI 0.3.0, Core 0.3.0, and Cedar 4.13.0. Rebuild and re-sign
