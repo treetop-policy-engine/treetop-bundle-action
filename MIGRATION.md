@@ -1,8 +1,8 @@
-# Bundle CLI 0.2 dependency refresh
+# Bundle CLI 0.3 dependency refresh
 
-The pending action update defaults to Bundle CLI 0.2.0, Core 0.2.0, and Cedar
+The pending action update defaults to Bundle CLI 0.3.0, Core 0.3.0, and Cedar
 4.13.0. Published action v2.0.0 retains its CLI 0.1.0 default; set
-`binary-version: 0.2.0` explicitly to use the new CLI with that release.
+`binary-version: 0.3.0` explicitly to use the new CLI with that release.
 
 Rebuild and re-sign archives before using them with the updated REST server.
 Archive generator versions must match the server's Bundle/Core/Cedar versions
@@ -12,7 +12,7 @@ unchanged. Cedar JSON consumers must accept array-valued `attr` for nested
 though Cedar 4.13 classifies them as warnings; `deny-warnings` is not required
 to reject them.
 
-CI builds the immutable Bundle 0.2.0 release revision, tests native packaging,
+CI builds the immutable Bundle 0.3.0 candidate revision, tests native packaging,
 and downloads the actual published CLI assets with checksum verification on
 Linux x64/ARM64, macOS ARM64, and Windows x64. Release the updated action only
 after those checks pass. This default changes archive compatibility and requires
@@ -59,3 +59,8 @@ executes validation, and checks reuse of the installed binary on every platform.
 For local development, build the same release source and supply `binary-path`.
 
 Publish Core and Bundle 0.1.0 before action v2.
+
+The default download requires the Bundle CLI 0.3.0 release assets. Publish Bundle
+0.3.0 before merging this action update. Until then, pass `binary-path` pointing
+to a CLI built from the pinned candidate revision to verify the new archive
+contract. Core 0.3.0 keeps the strict HTTP JSON contract unchanged.
