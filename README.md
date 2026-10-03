@@ -35,7 +35,7 @@ jobs:
 
 Use an immutable full commit SHA instead of `v2` in protected workflows. A
 major-version tag is shown above for readability. Published v2.0.0 defaults to
-CLI 0.1.0; the pending dependency refresh defaults to CLI 0.3.0. To select the
+CLI 0.1.0; the main branch defaults to CLI 0.3.0. To select the
 new CLI with the published action, set `binary-version: 0.3.0` explicitly.
 
 The default target is inferred from `treetop-bundle.toml`,
@@ -110,8 +110,8 @@ tuple has one owner. Different types can reuse attribute names. Old `kind`/`outp
 syntax and format 1 bundles are rejected. Migrate source manifests to format 2,
 rebuild archives, and re-sign. See [MIGRATION.md](MIGRATION.md).
 
-`binary-version` never accepts `latest` or a moving major version. The coordinated
-`0.3.0` release must be published before this update is activated. It provides native binaries for Linux x86-64 and ARM64, Apple-silicon
+`binary-version` never accepts `latest` or a moving major version. The Bundle
+`0.3.0` release provides native binaries for Linux x86-64 and ARM64, Apple-silicon
 macOS, and Windows x86-64.
 
 ## Outputs
@@ -146,7 +146,7 @@ and use of a preinstalled executable. A second four-platform matrix exercises
 real release downloads, archive extraction, checksum verification, and CLI
 execution on every supported native runner.
 
-CI also builds the immutable Bundle 0.3.0 candidate revision on all four runner
+CI also builds the immutable Bundle 0.3.0 release revision on all four runner
 platforms, packages it, and exercises the production installer over local HTTP.
 These source-archive checks supplement the real published-asset download matrix.
 Use `binary-path` for local development against an explicitly built executable.

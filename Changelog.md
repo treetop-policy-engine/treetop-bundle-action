@@ -11,8 +11,7 @@
 ### Changed
 
 - Refresh Rust toolchain action pins and the artifact-upload example. Verify
-  Bundle 0.3.0 candidate source, native archives, and published downloads on all platforms.
-  Publish the prerequisite CLI release before activating the new download default.
+  Bundle 0.3.0 release source, native archives, and published downloads on all platforms.
 
 ## [2.0.0] - 2026-09-06
 
