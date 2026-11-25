@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Security
+
+- Enforce the 128 MiB release download limit while streaming, including responses
+  without a Content-Length header. Oversized transfers stop before extraction.
+
+### Fixed
+
+- Extract verified ZIP releases on Windows using the two-path .NET ZIP API
+  supported by Windows PowerShell.
+
 ## [3.0.0] - 2026-10-03
 
 ### Breaking changes
