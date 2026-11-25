@@ -289,5 +289,5 @@ jobs:
             assert.equal(process.env.CACHED_BINARY, process.env.DOWNLOADED_BINARY);
             const result = spawnSync(process.env.DOWNLOADED_BINARY, ["--version"], { encoding: "utf8" });
             assert.equal(result.status, 0, result.stderr);
-            assert.match(result.stdout, /\b0\.3\.0\b/u);
+            assert.equal(result.stdout.trim(), `treetop-bundle-cli ${process.env.REQUESTED_VERSION}`);
           '
