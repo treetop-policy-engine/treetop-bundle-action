@@ -1,4 +1,13 @@
-# Action v3 migration
+# Action migration guide
+
+## Upgrading to v4
+
+Pin workflows to a reviewed v4 commit. The default Bundle CLI is now 0.4.0
+with Core 0.4.0 and Cedar 4.15.0. Rebuild and re-sign existing policy archives
+with these generator versions before deploying REST 0.3.0. Format 2 source
+manifests and declared label targets can be reused.
+
+## Action v3 migration
 
 Action v3.0.0 defaults to Bundle CLI 0.3.0, Core 0.3.0, and Cedar 4.13.0.
 Update workflow pins from v2 to a reviewed v3 commit. Existing v2 and v2.0.0

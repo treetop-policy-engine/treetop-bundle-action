@@ -27,15 +27,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: treetop-policy-engine/treetop-bundle-action@v3
+      - uses: treetop-policy-engine/treetop-bundle-action@v4
         with:
           manifest: treetop-bundle.toml
           deny-warnings: true
 ```
 
-Use an immutable full commit SHA instead of `v3` in protected workflows. A
-major-version tag is shown above for readability. Action v3.0.0 defaults to
-Bundle CLI 0.3.0 and Core 0.3.0. Rebuild and re-sign archives before using them
+Use an immutable full commit SHA instead of `v4` in protected workflows. A
+major-version tag is shown above for readability. Action v4.0.0 defaults to
+Bundle CLI 0.4.0 and Core 0.4.0. Rebuild and re-sign archives before using them
 with the updated server. Existing v2 tags retain their CLI 0.1.0 default.
 
 The default target is inferred from `treetop-bundle.toml`,
@@ -43,7 +43,7 @@ The default target is inferred from `treetop-bundle.toml`,
 conventional names:
 
 ```yaml
-- uses: treetop-policy-engine/treetop-bundle-action@v3
+- uses: treetop-policy-engine/treetop-bundle-action@v4
   with:
     target: policy
     manifest: permissions/read.cedar
@@ -60,7 +60,7 @@ strategy:
     policy: [identity, billing, infrastructure]
 steps:
   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-  - uses: treetop-policy-engine/treetop-bundle-action@v3
+  - uses: treetop-policy-engine/treetop-bundle-action@v4
     with:
       working-directory: policy/${{ matrix.policy }}
       deny-warnings: true
@@ -73,7 +73,7 @@ The same validation is performed before anything is written.
 
 ```yaml
 - id: bundle
-  uses: treetop-policy-engine/treetop-bundle-action@v3
+  uses: treetop-policy-engine/treetop-bundle-action@v4
   with:
     manifest: treetop-bundle.toml
     build-output: dist/policy-bundle.tar.gz
@@ -100,18 +100,18 @@ private signing key.
 | `working-directory` | `.` | Base directory for policy paths |
 | `deny-warnings` | `false` | Treat warnings as validation failures |
 | `build-output` | | Build an unsigned archive at this path |
-| `binary-version` | `0.3.0` | Exact CLI release, without a leading `v` |
+| `binary-version` | `0.4.0` | Exact CLI release, without a leading `v` |
 | `binary-path` | | Use an existing CLI instead of downloading one |
 | `github-token` | | Optional token for release downloads |
 
-Action v3 defaults to the coordinated Bundle/Core 0.3.0 contract. Label rules declare
+Action v4 defaults to the coordinated Bundle/Core 0.4.0 contract. Label rules declare
 `target.resource_type` and `target.attribute`; one exact resource-type/attribute
 tuple has one owner. Different types can reuse attribute names. Old `kind`/`output`
 syntax and format 1 bundles are rejected. Migrate source manifests to format 2,
 rebuild archives, and re-sign. See [MIGRATION.md](MIGRATION.md).
 
 `binary-version` never accepts `latest` or a moving major version. The Bundle
-`0.3.0` release provides native binaries for Linux x86-64 and ARM64, Apple-silicon
+`0.4.0` release provides native binaries for Linux x86-64 and ARM64, Apple-silicon
 macOS, and Windows x86-64.
 
 ## Outputs
@@ -146,7 +146,7 @@ and use of a preinstalled executable. A second four-platform matrix exercises
 real release downloads, archive extraction, checksum verification, and CLI
 execution on every supported native runner.
 
-CI also builds the immutable Bundle 0.3.0 release revision on all four runner
+CI also builds the immutable Bundle 0.4.0 release revision on all four runner
 platforms, packages it, and exercises the production installer over local HTTP.
 These source-archive checks supplement the real published-asset download matrix.
 Use `binary-path` for local development against an explicitly built executable.
