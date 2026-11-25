@@ -24,11 +24,11 @@ test("accepts exact versions and rejects tags or moving channels", () => {
   assert.throws(() => validateVersion("latest"), /exact semantic version/u);
 });
 
-test("keeps both Expand-Archive parameters in one PowerShell command", () => {
+test("uses the two-path ZIP extractor supported by Windows PowerShell", () => {
   assert.equal(
     windowsExtractionScript(),
-    "$ErrorActionPreference = 'Stop'; Expand-Archive -LiteralPath " +
-      "$env:TREETOP_ACTION_ARCHIVE -DestinationPath $env:TREETOP_ACTION_DESTINATION",
+    "$ErrorActionPreference = 'Stop'; Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
+      "[IO.Compression.ZipFile]::ExtractToDirectory($env:TREETOP_ACTION_ARCHIVE, $env:TREETOP_ACTION_DESTINATION)",
   );
 });
 
@@ -92,6 +92,27 @@ test("download rejects unsuccessful and oversized responses", async () => {
     ),
     /exceeds 128 MiB/u,
   );
+});
+
+test("stops reading a streamed response when it crosses the download limit", async (t) => {
+  const temporary = await fsp.mkdtemp(path.join(os.tmpdir(), "treetop-download-test-"));
+  t.after(() => fsp.rm(temporary, { recursive: true, force: true }));
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) {
+      controller.enqueue(Buffer.alloc(1024 * 1024));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  const file = path.join(temporary, "asset");
+  await assert.rejects(
+    download("https://example.invalid/asset", file, "", async () => new Response(body)),
+    /exceeds 128 MiB/u,
+  );
+  assert.equal(cancelled, true);
+  assert.ok((await fsp.stat(file)).size <= 128 * 1024 * 1024);
 });
 
 test("installs a verified archive and reuses the completed tool cache", async () => {

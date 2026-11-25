@@ -76,17 +76,25 @@ async function download(url, destination, token, fetchImplementation = globalThi
     redirect: "follow",
   });
   if (!response.ok) {
+    await response.body?.cancel();
     throw new Error(`failed to download ${url}: HTTP ${response.status}`);
   }
   const declaredLength = Number(response.headers.get("content-length") || 0);
   if (declaredLength > MAX_DOWNLOAD_BYTES) {
+    await response.body?.cancel();
     throw new Error(`download from ${url} exceeds 128 MiB`);
   }
-  const contents = Buffer.from(await response.arrayBuffer());
-  if (contents.length > MAX_DOWNLOAD_BYTES) {
-    throw new Error(`download from ${url} exceeds 128 MiB`);
+  let received = 0;
+  async function* limitedBody() {
+    for await (const chunk of response.body || []) {
+      received += chunk.byteLength;
+      if (received > MAX_DOWNLOAD_BYTES) {
+        throw new Error(`download from ${url} exceeds 128 MiB`);
+      }
+      yield chunk;
+    }
   }
-  await fsp.writeFile(destination, contents, { flag: "wx" });
+  await fsp.writeFile(destination, limitedBody(), { flag: "wx" });
 }
 
 function extractArchive(archive, destination, platform) {
@@ -120,8 +128,9 @@ function extractArchive(archive, destination, platform) {
 function windowsExtractionScript() {
   return (
     "$ErrorActionPreference = 'Stop'; " +
-    "Expand-Archive -LiteralPath $env:TREETOP_ACTION_ARCHIVE " +
-    "-DestinationPath $env:TREETOP_ACTION_DESTINATION"
+    "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
+    "[IO.Compression.ZipFile]::ExtractToDirectory(" +
+    "$env:TREETOP_ACTION_ARCHIVE, $env:TREETOP_ACTION_DESTINATION)"
   );
 }
 
