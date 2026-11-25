@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-25
+
+### Breaking changes
+
+- Default to Bundle CLI 0.4.0 and verify its published native binaries. Pin
+  workflows to v4, then rebuild and re-sign archives for REST 0.3.0.
+
 ### Security
 
 - Enforce the 128 MiB release download limit while streaming, including responses
