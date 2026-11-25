@@ -8,6 +8,7 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const {
+  MAX_DOWNLOAD_BYTES,
   checksumForAsset,
   download,
   installBinary,
@@ -97,10 +98,17 @@ test("download rejects unsuccessful and oversized responses", async () => {
 test("stops reading a streamed response when it crosses the download limit", async (t) => {
   const temporary = await fsp.mkdtemp(path.join(os.tmpdir(), "treetop-download-test-"));
   t.after(() => fsp.rm(temporary, { recursive: true, force: true }));
+  const chunk = Buffer.alloc(1024 * 1024);
+  let remaining = MAX_DOWNLOAD_BYTES / chunk.byteLength + 4;
   let cancelled = false;
   const body = new ReadableStream({
     pull(controller) {
-      controller.enqueue(Buffer.alloc(1024 * 1024));
+      if (remaining === 0) {
+        controller.close();
+        return;
+      }
+      remaining--;
+      controller.enqueue(chunk);
     },
     cancel() {
       cancelled = true;
@@ -112,7 +120,7 @@ test("stops reading a streamed response when it crosses the download limit", asy
     /exceeds 128 MiB/u,
   );
   assert.equal(cancelled, true);
-  assert.ok((await fsp.stat(file)).size <= 128 * 1024 * 1024);
+  assert.ok((await fsp.stat(file)).size <= MAX_DOWNLOAD_BYTES);
 });
 
 test("installs a verified archive and reuses the completed tool cache", async () => {
